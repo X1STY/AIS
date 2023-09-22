@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
-using System.Text;
 
 
 namespace lab1
@@ -18,7 +18,8 @@ namespace lab1
             private int age;
             private bool isAlive;
 
-            public Human() {
+            public Human()
+            {
                 first_name = string.Empty;
                 last_name = string.Empty;
                 age = 0;
@@ -35,6 +36,29 @@ namespace lab1
             public string Last_name { get { return last_name; } set { this.last_name = value; } }
             public int Age { get { return age; } set { this.age = value; } }
             public bool IsAlive { get { return isAlive; } set { this.isAlive = value; } }
+
+            public override string ToString()
+            {
+                return $"{first_name};{last_name};{age};{isAlive}";
+            }
+
+            public Human ToStruct(string humanInString)
+            {
+                Human newPerson = new Human();
+                string[] data = humanInString.Split(';');
+                if (data.Length != 4) throw new Exception("Incorrect data type"); 
+                newPerson.First_name = data[0].Trim();
+                newPerson.Last_name = data[1].Trim();
+
+                bool ageCheck = Int32.TryParse(data[2], out int age);
+                if (ageCheck) newPerson.Age = age;
+                else throw new Exception("Incorrect age type\n");
+
+                bool lifeStatusCheck = Boolean.TryParse(data[3], out bool isAlive);
+                if (lifeStatusCheck) newPerson.IsAlive = isAlive;
+                else throw new Exception("Incorrect life status type\n");
+                return newPerson;
+            }
         }
 
         
@@ -53,16 +77,14 @@ namespace lab1
                 {
                     string rowData = sr.ReadToEnd();
                     string[] lines = rowData.Split('\n');
-                    foreach (string line in lines)
+                    for (int i = 0; i<lines.Length-1; i++)
                     {
-                        string[] fields = line.Split(';');
-                        if (fields.Length == 4) people.Add(new Human(fields[0], fields[1], Int32.Parse(fields[2]), bool.Parse(fields[3])));
-                        else break;
+                        people.Add(new Human().ToStruct(lines[i]));
                     }
                     sr.Close();
                 }
             }
-            catch (Exception e) { Console.WriteLine($"Caught an Exception:\n{e}"); }
+            catch (Exception e) { Console.WriteLine($"Cannot read the file or file contains incorrect data\n{e.Message}\n"); Environment.Exit(1); }
         }
 
         public void updateCSV(List<Human> people, bool addition)
@@ -71,7 +93,7 @@ namespace lab1
             {
                 foreach (Human human in people)
                 {
-                    sw.WriteLine($"{human.First_name};{human.Last_name};{human.Age};{human.IsAlive}");
+                    sw.WriteLine(human.ToString());
                 }
                 sw.Close();
             }
@@ -79,21 +101,26 @@ namespace lab1
 
         public string DeleteRecord(List<Human> people, int recordNumber) 
         {
-            if (recordNumber <= 0 || recordNumber > people.Count) return $"There is no record with id {recordNumber}\n";
+            if (recordNumber <= 0 || recordNumber > people.Count) throw new Exception($"There is no record with id {recordNumber}\n");
             people.Remove(people[recordNumber - 1]);
             updateCSV(people, false);
             return $"record №{recordNumber} deleted successfully";
 
         }
-        public string AddRecord(List<Human> people, string[] input)
+        public string AddRecord(List<Human> people, string input)
         {
-            string _firstName = input[0];
-            string _lastName = input[1];
-            int _age = Int32.Parse(input[2]);
-            bool _isAlive = Boolean.Parse(input[3]);
-            people.Add(new Human(_firstName, _lastName,_age,_isAlive));
-            updateCSV(people, false);
+            Human human = new Human().ToStruct(input);
+            people.Add(human);
+            updateCSV(new List<Human> { human }, true);
             return "New record added successfully";
         }
+
+        public Human GetSingleRecord(int recordNumber)
+        {
+            if (recordNumber <= 0 || recordNumber > people.Count) throw new Exception($"There is no record with id {recordNumber}\n");
+            return people[recordNumber - 1];
+
+        }
+
     }
 }

@@ -35,14 +35,20 @@ namespace lab1
                             Console.Clear();
                             Console.WriteLine($"Enter number of record you need (1-{model.People.Count})");
                             int recordNumber = Int32.Parse(Console.ReadLine());
-                            Console.WriteLine(view.GetData(model.People, recordNumber));
+                            try
+                            {
+                                Console.WriteLine(view.GetData(model.GetSingleRecord(recordNumber)));
+                            } catch (Exception e) { Console.WriteLine(e.Message); }
                             break;
                         }
                     case 3:
                         {
                             Console.Clear();
                             string input = view.EnterNewData();
-                            Console.WriteLine(model.AddRecord(model.People, input.Split(',')));
+                            try
+                            {
+                                Console.WriteLine(model.AddRecord(model.People, input));
+                            } catch (Exception e) { Console.WriteLine(e.Message); } 
                             break;
                         }
                     case 4:
@@ -50,7 +56,10 @@ namespace lab1
                             Console.Clear();
                             Console.WriteLine($"Enter number of record to delete (1-{model.People.Count})\n");
                             int recordNumber = Int32.Parse(Console.ReadLine());
-                            Console.WriteLine(model.DeleteRecord(model.People, recordNumber));
+                            try
+                            {
+                                Console.WriteLine(model.DeleteRecord(model.People, recordNumber));
+                            } catch (Exception e) { Console.WriteLine(e.Message); }
                             break;
                         }
                     case 5:
