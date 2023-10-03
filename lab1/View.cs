@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static lab1.Model;
+using static lab2_Server_AIS.Model;
 
-namespace lab1
+namespace lab2_Server_AIS
 {
     public class View
     {
@@ -28,11 +28,5 @@ namespace lab1
             output.AppendFormat("{0,-20}|| {1,-20}|| {2,-5}|| {3}", human.First_name, human.Last_name, human.Age, human.IsAlive).AppendLine();
             return output.ToString();
         }
-        public string EnterNewData()
-        {
-            Console.WriteLine("Enter data about new object in following way:\nFirst Name,Last Name,Age,Is this person alive(true or false)");
-            return Console.ReadLine().Replace(',', ';');
-        }
-
     }
 }

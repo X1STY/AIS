@@ -1,78 +1,112 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 
-namespace lab1
+namespace lab2_Server_AIS
 {
     public class Controller
     {
-        static void Main(string[] args)
+        static IniFile cfg = new IniFile(@"C:\Users\X1STY-\source\repos\X1STY\AIS\config.ini");
+
+        private static int CLIENT_PORT = Int32.Parse(cfg.Read("CLIENT_PORT", "AIS"));
+        private static int SERVER_PORT = Int32.Parse(cfg.Read("SERVER_PORT", "AIS"));
+        private static string CLIENT_IP = cfg.Read("IP", "AIS");
+
+        static UdpClient udpClient;
+        private static string RecieveMessage()
         {
-            Menu();
+            var remoteIP = (IPEndPoint)udpClient.Client.LocalEndPoint;
+            string message = "";
+
+            try
+            {
+                byte[] data = udpClient.Receive(ref remoteIP);
+                message = Encoding.Unicode.GetString(data);
+                Console.WriteLine($"User send {message} message");
+            }
+            catch (Exception e) { Console.WriteLine(e.Message); }
+            return message;
         }
 
-        public static void Menu()
+        private static void SendMessage(string msg)
         {
-            Model model = new Model();
-            View view = new View();
-
-            while (true)
+            try
             {
-                Console.WriteLine("1. Get all records\n2. Get a record by it's number\n3. Add a record\n4. Delete a record\nESC. Exit\n");
-                ConsoleKey option = Console.ReadKey().Key;
-            
+                byte[] data = Encoding.Unicode.GetBytes(msg);
+                udpClient.Send(data, data.Length, CLIENT_IP, CLIENT_PORT);
+            }
+            catch (Exception e) { Console.WriteLine(e.Message); }
+        }
+
+        static void Main(string[] args)
+        {
+            try
+            {
+                udpClient = new UdpClient(SERVER_PORT);
+                Console.WriteLine($"Server has been started on {SERVER_PORT} PORT");
+                Menu();
+            } catch (Exception e) { Console.WriteLine(e.Message); }
+        }
+
+            static void Menu()
+            {
+                Model model = new Model();
+                View view = new View();
+
+                while (true)
+                {
+                SendMessage("1. Get all records\n2. Get a record by it's number\n3. Add a record\n4. Delete a record\nESC. Exit\n");
+                string option = RecieveMessage();
                 Console.WriteLine(option);
                 switch (option)
                 {
-                    case ConsoleKey.D1:
-                        {   
-                            Console.Clear();
-                            Console.WriteLine($"{view.GetData(model.People)}\n");
+                    case "1":
+                        {
+                            SendMessage($"{view.GetData(model.People)}\n");
                             break;
                         }
-                    case ConsoleKey.D2:
+                    case "2":
                         {
-                            Console.Clear();
-                            Console.WriteLine($"Enter number of record you need (1-{model.People.Count})");
-                            Int32.TryParse(Console.ReadLine(), out int recordNumber);
+                            SendMessage($"Enter number of record you need (1-{model.People.Count})");
+                            Int32.TryParse(RecieveMessage(), out int recordNumber);
                             try
                             {
-                                Console.WriteLine(view.GetData(model.GetSingleRecord(recordNumber)));
-                            } catch (Exception e) { Console.WriteLine(e.Message); }
+                                SendMessage(view.GetData(model.GetSingleRecord(recordNumber)));
+                            }
+                            catch (Exception e) { SendMessage(e.Message); }
                             break;
                         }
-                    case ConsoleKey.D3:
+                    case "3":
                         {
-                            Console.Clear();
-                            string input = view.EnterNewData();
+                            SendMessage("Enter data about new object in following way:\nFirst Name,Last Name,Age,Is this person alive(true or false)");
+                            string input = RecieveMessage().Replace(',', ';');
                             try
                             {
-                                Console.WriteLine(model.AddRecord(model.People, input));
-                            } catch (Exception e) { Console.WriteLine(e.Message); } 
+                                SendMessage(model.AddRecord(model.People, input));
+                            }
+                            catch (Exception e) { SendMessage(e.Message); }
                             break;
                         }
-                    case ConsoleKey.D4:
+                    case "4":
                         {
-                            Console.Clear();
-                            Console.WriteLine($"Enter number of record to delete (1-{model.People.Count})\n");
-                            Int32.TryParse(Console.ReadLine(), out int recordNumber);
+                            SendMessage($"Enter number of record to delete (1-{model.People.Count})\n");
+                            Int32.TryParse(RecieveMessage(), out int recordNumber);
                             try
                             {
-                                Console.WriteLine(model.DeleteRecord(model.People, recordNumber));
-                            } catch (Exception e) { Console.WriteLine(e.Message); }
+                                SendMessage(model.DeleteRecord(model.People, recordNumber));
+                            }
+                            catch (Exception e) { SendMessage(e.Message); }
                             break;
                         }
-                    case ConsoleKey.Escape:
+                    default:
                         {
-                            Environment.Exit(0);
+                            SendMessage($"Incorrect input {option}\n");
                             break;
                         }
-                    default: 
-                        {
-                            Console.Clear();
-                            Console.WriteLine($"Incorrect input {option}\n");
-                            break;
-                        }
+                    }
                 }
             }
         }
     }
-}

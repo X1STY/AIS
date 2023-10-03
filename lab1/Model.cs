@@ -4,11 +4,11 @@ using System.Data.Common;
 using System.IO;
 
 
-namespace lab1
+namespace lab2_Server_AIS
 {
     public class Model
     {
-        const string pathToCSV = @"C:\Users\X1STY-\Desktop\KAVO.csv";
+        const string pathToCSV = "KAVO.csv";
         private List<Human> people;
         public List<Human> People { get { return people; } }
         public struct Human

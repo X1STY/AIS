@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IniFile.cs" />
     <Compile Include="View.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="Controller.cs" />
