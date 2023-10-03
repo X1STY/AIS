@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 // Change this to match your program's normal namespace
-namespace Lab2_Client_AIS
+namespace lab2_Server_AIS
 {
     class IniFile   // revision 11
     {
