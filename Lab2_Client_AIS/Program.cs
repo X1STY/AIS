@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
@@ -23,11 +24,28 @@ namespace Lab2_Client_AIS
             while (true)
             {
                 RecieveMessage();
-                //ConsoleKey option = Console.ReadKey().Key;
-                
-                SendMessage(Console.ReadLine());
-
-                RecieveMessage();
+                string option = Console.ReadLine();
+                switch (option)
+                {
+                    case "2":
+                    case "3":
+                    case "4":
+                        {
+                            Console.Clear();
+                            SendMessage(option);
+                            RecieveMessage();
+                            SendMessage(Console.ReadLine());
+                            RecieveMessage();
+                            break;
+                        }
+                    default:
+                        {
+                            Console.Clear();
+                            SendMessage(option);
+                            RecieveMessage();
+                            break;
+                        }
+                }
             }
         }
 

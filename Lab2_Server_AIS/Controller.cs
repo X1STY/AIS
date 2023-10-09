@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace lab2_Server_AIS
 {
@@ -14,27 +16,25 @@ namespace lab2_Server_AIS
         private static string CLIENT_IP = cfg.Read("IP", "AIS");
 
         static UdpClient udpClient;
-        private static string RecieveMessage()
+        private static string RecieveMessageAsync()
         {
             var remoteIP = (IPEndPoint)udpClient.Client.LocalEndPoint;
             string message = "";
 
             try
             {
-                byte[] data = udpClient.Receive(ref remoteIP);
+                byte[] data = udpClient.ReceiveAsync().Result.Buffer;
                 message = Encoding.Unicode.GetString(data);
-                Console.WriteLine($"User send {message} message");
             }
             catch (Exception e) { Console.WriteLine(e.Message); }
             return message;
         }
-
-        private static void SendMessage(string msg)
+        private static void SendMessageAsync(string msg)
         {
             try
             {
                 byte[] data = Encoding.Unicode.GetBytes(msg);
-                udpClient.Send(data, data.Length, CLIENT_IP, CLIENT_PORT);
+                udpClient.SendAsync(data, data.Length, CLIENT_IP, CLIENT_PORT);
             }
             catch (Exception e) { Console.WriteLine(e.Message); }
         }
@@ -46,7 +46,8 @@ namespace lab2_Server_AIS
                 udpClient = new UdpClient(SERVER_PORT);
                 Console.WriteLine($"Server has been started on {SERVER_PORT} PORT");
                 Menu();
-            } catch (Exception e) { Console.WriteLine(e.Message); }
+            }
+            catch (Exception e) { Console.WriteLine(e.Message); }
         }
 
             static void Menu()
@@ -56,52 +57,51 @@ namespace lab2_Server_AIS
 
                 while (true)
                 {
-                SendMessage("1. Get all records\n2. Get a record by it's number\n3. Add a record\n4. Delete a record\nESC. Exit\n");
-                string option = RecieveMessage();
-                Console.WriteLine(option);
+                SendMessageAsync("1. Get all records\n2. Get a record by it's number\n3. Add a record\n4. Delete a record\nESC. Exit\n");
+                string option = RecieveMessageAsync();
                 switch (option)
                 {
                     case "1":
                         {
-                            SendMessage($"{view.GetData(model.People)}\n");
+                            SendMessageAsync($"{view.GetData(model.People)}\n");
                             break;
                         }
                     case "2":
                         {
-                            SendMessage($"Enter number of record you need (1-{model.People.Count})");
-                            Int32.TryParse(RecieveMessage(), out int recordNumber);
+                            SendMessageAsync($"Enter number of record you need (1-{model.People.Count})");
+                            Int32.TryParse(RecieveMessageAsync(), out int recordNumber);
                             try
                             {
-                                SendMessage(view.GetData(model.GetSingleRecord(recordNumber)));
+                                SendMessageAsync(view.GetData(model.GetSingleRecord(recordNumber)));
                             }
-                            catch (Exception e) { SendMessage(e.Message); }
+                            catch (Exception e) { SendMessageAsync(e.Message); }
                             break;
                         }
                     case "3":
                         {
-                            SendMessage("Enter data about new object in following way:\nFirst Name,Last Name,Age,Is this person alive(true or false)");
-                            string input = RecieveMessage().Replace(',', ';');
+                            SendMessageAsync("Enter data about new object in following way:\nFirst Name,Last Name,Age,Is this person alive(true or false)");
+                            string input = RecieveMessageAsync().Replace(',', ';');
                             try
                             {
-                                SendMessage(model.AddRecord(model.People, input));
+                                SendMessageAsync(model.AddRecord(model.People, input));
                             }
-                            catch (Exception e) { SendMessage(e.Message); }
+                            catch (Exception e) { SendMessageAsync(e.Message); }
                             break;
                         }
                     case "4":
                         {
-                            SendMessage($"Enter number of record to delete (1-{model.People.Count})\n");
-                            Int32.TryParse(RecieveMessage(), out int recordNumber);
+                            SendMessageAsync($"Enter number of record to delete (1-{model.People.Count})\n");
+                            Int32.TryParse(RecieveMessageAsync(), out int recordNumber);
                             try
                             {
-                                SendMessage(model.DeleteRecord(model.People, recordNumber));
+                                SendMessageAsync(model.DeleteRecord(model.People, recordNumber));
                             }
-                            catch (Exception e) { SendMessage(e.Message); }
+                            catch (Exception e) { SendMessageAsync(e.Message); }
                             break;
                         }
                     default:
                         {
-                            SendMessage($"Incorrect input {option}\n");
+                            SendMessageAsync($"Incorrect input {option}\n");
                             break;
                         }
                     }

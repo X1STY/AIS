@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NLog;
+using NLog.LayoutRenderers;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
@@ -10,6 +12,7 @@ namespace lab2_Server_AIS
     {
         const string pathToCSV = "KAVO.csv";
         private List<Human> people;
+        static Logger logger;
         public List<Human> People { get { return people; } }
         public struct Human
         {
@@ -32,10 +35,10 @@ namespace lab2_Server_AIS
                 age = _age;
                 isAlive = _isAlive;
             }
-            public string First_name { get { return first_name; } set { this.first_name = value; } }
-            public string Last_name { get { return last_name; } set { this.last_name = value; } }
-            public int Age { get { return age; } set { this.age = value; } }
-            public bool IsAlive { get { return isAlive; } set { this.isAlive = value; } }
+            public string First_name { get => first_name; set => first_name = value; }
+            public string Last_name { get => last_name; set => this.last_name = value;  }
+            public int Age { get => age; set => this.age = value; }
+            public bool IsAlive { get => isAlive; set => this.isAlive = value; }
 
             public override string ToString()
             {
@@ -46,17 +49,17 @@ namespace lab2_Server_AIS
             {
                 Human newPerson = new Human();
                 string[] data = humanInString.Split(';');
-                if (data.Length != 4) throw new Exception("Incorrect data type"); 
+                if (data.Length != 4) { logger.Info("Incorrect data type");  throw new Exception("Incorrect data type"); ; }
                 newPerson.First_name = data[0].Trim();
                 newPerson.Last_name = data[1].Trim();
 
                 bool ageCheck = Int32.TryParse(data[2], out int age);
                 if (ageCheck) newPerson.Age = age;
-                else throw new Exception("Incorrect age type\n");
+                else {logger.Info("Incorrect age input"); throw new Exception("Incorrect age type\n"); }
 
                 bool lifeStatusCheck = Boolean.TryParse(data[3], out bool isAlive);
                 if (lifeStatusCheck) newPerson.IsAlive = isAlive;
-                else throw new Exception("Incorrect life status type\n");
+                else {logger.Info("Incorrct life status"); throw new Exception("Incorrect life status type\n"); } 
                 return newPerson;
             }
         }
@@ -64,7 +67,7 @@ namespace lab2_Server_AIS
         
         public Model()
         {
-
+            logger = LogManager.GetCurrentClassLogger();
             people = new List<Human>();
             ReadCSV();
         }
@@ -84,7 +87,7 @@ namespace lab2_Server_AIS
                     sr.Close();
                 }
             }
-            catch (Exception e) { Console.WriteLine($"Cannot read the file or file contains incorrect data\n{e.Message}\n"); Environment.Exit(1); }
+            catch (Exception e) {logger.Error("db file not found"); Console.WriteLine($"Cannot read the file or file contains incorrect data\n{e.Message}\n"); Environment.Exit(1); }
         }
 
         public void updateCSV(List<Human> people, bool addition)
@@ -101,7 +104,7 @@ namespace lab2_Server_AIS
 
         public string DeleteRecord(List<Human> people, int recordNumber) 
         {
-            if (recordNumber <= 0 || recordNumber > people.Count) throw new Exception($"There is no record with id {recordNumber}\n");
+            if (recordNumber <= 0 || recordNumber > people.Count) {logger.Error("Incorrect record number id");  throw new Exception($"There is no record with id {recordNumber}\n");  }
             people.Remove(people[recordNumber - 1]);
             updateCSV(people, false);
             return $"record №{recordNumber} deleted successfully";
@@ -117,7 +120,7 @@ namespace lab2_Server_AIS
 
         public Human GetSingleRecord(int recordNumber)
         {
-            if (recordNumber <= 0 || recordNumber > people.Count) throw new Exception($"There is no record with id {recordNumber}\n");
+            if (recordNumber <= 0 || recordNumber > people.Count) { logger.Error("Unexisted record id");throw new Exception($"There is no record with id {recordNumber}\n"); }
             return people[recordNumber - 1];
 
         }
