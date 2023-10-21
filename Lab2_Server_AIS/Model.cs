@@ -1,124 +1,65 @@
 ﻿using NLog;
-using NLog.LayoutRenderers;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
+using System.Configuration;
+using System.Data.Entity.Validation;
 using System.IO;
-
+using System.Linq;
+using System.Security.Cryptography;
 
 namespace lab2_Server_AIS
 {
     public class Model
     {
-        const string pathToCSV = "KAVO.csv";
-        private List<Human> people;
         static Logger logger;
-        public List<Human> People { get { return people; } }
-        public struct Human
-        {
-            private string first_name;
-            private string last_name;
-            private int age;
-            private bool isAlive;
-
-            public Human()
-            {
-                first_name = string.Empty;
-                last_name = string.Empty;
-                age = 0;
-                isAlive = false;
-            }
-            public Human(string _first_name, string _last_name, int _age, bool _isAlive)
-            {
-                first_name = _first_name;
-                last_name = _last_name;
-                age = _age;
-                isAlive = _isAlive;
-            }
-            public string First_name { get => first_name; set => first_name = value; }
-            public string Last_name { get => last_name; set => this.last_name = value;  }
-            public int Age { get => age; set => this.age = value; }
-            public bool IsAlive { get => isAlive; set => this.isAlive = value; }
-
-            public override string ToString()
-            {
-                return $"{first_name};{last_name};{age};{isAlive}";
-            }
-
-            public Human ToStruct(string humanInString)
-            {
-                Human newPerson = new Human();
-                string[] data = humanInString.Split(';');
-                if (data.Length != 4) { logger.Info("Incorrect data type");  throw new Exception("Incorrect data type"); ; }
-                newPerson.First_name = data[0].Trim();
-                newPerson.Last_name = data[1].Trim();
-
-                bool ageCheck = Int32.TryParse(data[2], out int age);
-                if (ageCheck) newPerson.Age = age;
-                else {logger.Info("Incorrect age input"); throw new Exception("Incorrect age type\n"); }
-
-                bool lifeStatusCheck = Boolean.TryParse(data[3], out bool isAlive);
-                if (lifeStatusCheck) newPerson.IsAlive = isAlive;
-                else {logger.Info("Incorrct life status"); throw new Exception("Incorrect life status type\n"); } 
-                return newPerson;
-            }
-        }
-
+        private List<User> people;
+        public List<User> People { get { return people; } }
         
         public Model()
         {
             logger = LogManager.GetCurrentClassLogger();
-            people = new List<Human>();
-            ReadCSV();
+            people = new List<User>();
+            getDataFromDataBase();
         }
 
-        public void ReadCSV()
+        void getDataFromDataBase()
         {
-            try
+            List<User> users = new List<User>();
+            using (var db = new AISEntities())
             {
-                using (StreamReader sr = new StreamReader(pathToCSV))
-                {
-                    string rowData = sr.ReadToEnd();
-                    string[] lines = rowData.Split('\n');
-                    for (int i = 0; i<lines.Length-1; i++)
-                    {
-                        people.Add(new Human().ToStruct(lines[i]));
-                    }
-                    sr.Close();
-                }
+                 users = db.Users.OrderBy(x => x.id).ToList();
             }
-            catch (Exception e) {logger.Error("db file not found"); Console.WriteLine($"Cannot read the file or file contains incorrect data\n{e.Message}\n"); Environment.Exit(1); }
-        }
-
-        public void updateCSV(List<Human> people, bool addition)
-        {
-            using (StreamWriter sw = new StreamWriter(pathToCSV, addition))
+            foreach (var user in users)
             {
-                foreach (Human human in people)
-                {
-                    sw.WriteLine(human.ToString());
-                }
-                sw.Close();
+                people.Add(user);
             }
         }
-
-        public string DeleteRecord(List<Human> people, int recordNumber) 
+        public string DeleteRecord(List<User> people, int recordNumber) 
         {
             if (recordNumber <= 0 || recordNumber > people.Count) {logger.Error("Incorrect record number id");  throw new Exception($"There is no record with id {recordNumber}\n");  }
-            people.Remove(people[recordNumber - 1]);
-            updateCSV(people, false);
+            User human = people[recordNumber - 1];
+            using (var db = new AISEntities())
+            {
+                db.Users.Remove(db.Users.Find(human.id));
+                db.SaveChanges();
+            }
+            people.Remove(human);
             return $"record №{recordNumber} deleted successfully";
 
         }
-        public string AddRecord(List<Human> people, string input)
+        public string AddRecord(List<User> people, string input)
         {
-            Human human = new Human().ToStruct(input);
+            User human = new User().ToStruct(input);
+            using (var db = new AISEntities())
+            {
+                db.Users.Add(human);
+                db.SaveChanges();
+            }
             people.Add(human);
-            updateCSV(new List<Human> { human }, true);
             return "New record added successfully";
         }
 
-        public Human GetSingleRecord(int recordNumber)
+        public User GetSingleRecord(int recordNumber)
         {
             if (recordNumber <= 0 || recordNumber > people.Count) { logger.Error("Unexisted record id");throw new Exception($"There is no record with id {recordNumber}\n"); }
             return people[recordNumber - 1];
