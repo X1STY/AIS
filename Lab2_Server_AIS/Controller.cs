@@ -17,7 +17,6 @@ namespace lab2_Server_AIS
         static UdpClient udpClient;
         private static async Task<string> ReceiveMessageAsync()
         {
-            var remoteIP = (IPEndPoint)udpClient.Client.LocalEndPoint;
             string message = "";
 
             try
@@ -54,53 +53,34 @@ namespace lab2_Server_AIS
             Model model = new Model();
             View view = new View();
 
+            await SendMessageAsync("connect");
             while (true)
             {
-                await SendMessageAsync("1. Get all records\n2. Get a record by its number\n3. Add a record\n4. Delete a record\nESC. Exit\n");
                 string option = await ReceiveMessageAsync();
                 switch (option)
                 {
-                    case "1":
+                    case "get_data":
                         {
-                            await SendMessageAsync($"{view.GetData(model.People)}\n");
-                            break;
-                        }
-                    case "2":
-                        {
-                            await SendMessageAsync($"Enter number of record you need (1-{model.People.Count})");
-                            Int32.TryParse(await ReceiveMessageAsync(), out int recordNumber);
                             try
                             {
-                                await SendMessageAsync(view.GetData(model.GetSingleRecord(recordNumber)));
+                                await SendMessageAsync(view.GetData(model.People));
+
                             }
-                            catch (Exception e) { await SendMessageAsync(e.Message); }
+                            catch (Exception e) { Console.WriteLine(e.Message); }
                             break;
                         }
-                    case "3":
+                    case "save_data":
                         {
-                            await SendMessageAsync("Enter data about a new object in the following way:\nFirst Name,Last Name,Age,Is this person alive(true or false)");
                             string input = await ReceiveMessageAsync();
                             try
                             {
-                                await SendMessageAsync(model.AddRecord(model.People, input.Replace(',', ';')));
+                                model.UpdateDataBase(input);
                             }
-                            catch (Exception e) { await SendMessageAsync(e.Message); }
-                            break;
-                        }
-                    case "4":
-                        {
-                            await SendMessageAsync($"Enter the number of the record to delete (1-{model.People.Count})\n");
-                            Int32.TryParse(await ReceiveMessageAsync(), out int recordNumber);
-                            try
-                            {
-                                await SendMessageAsync(model.DeleteRecord(model.People, recordNumber));
-                            }
-                            catch (Exception e) { await SendMessageAsync(e.Message); }
+                            catch (Exception e) {Console.WriteLine(e.Message); }
                             break;
                         }
                     default:
                         {
-                            await SendMessageAsync($"Incorrect input {option}\n");
                             break;
                         }
                 }

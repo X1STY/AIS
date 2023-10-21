@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lab2_Server_AIS", "Lab2_Server_AIS\lab2_Server_AIS.csproj", "{258661C2-3D38-46D9-A4BF-6058EE07D407}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPF_Client", "WPF_Client\WPF_Client.csproj", "{838570E1-BCE4-4688-A791-6201EF1F4BF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{258661C2-3D38-46D9-A4BF-6058EE07D407}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{258661C2-3D38-46D9-A4BF-6058EE07D407}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{258661C2-3D38-46D9-A4BF-6058EE07D407}.Release|Any CPU.Build.0 = Release|Any CPU
+		{838570E1-BCE4-4688-A791-6201EF1F4BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{838570E1-BCE4-4688-A791-6201EF1F4BF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{838570E1-BCE4-4688-A791-6201EF1F4BF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{838570E1-BCE4-4688-A791-6201EF1F4BF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

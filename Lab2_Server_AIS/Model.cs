@@ -19,10 +19,10 @@ namespace lab2_Server_AIS
         {
             logger = LogManager.GetCurrentClassLogger();
             people = new List<User>();
-            getDataFromDataBase();
+            GetDataFromDataBase();
         }
 
-        void getDataFromDataBase()
+        void GetDataFromDataBase()
         {
             List<User> users = new List<User>();
             using (var db = new AISEntities())
@@ -34,36 +34,21 @@ namespace lab2_Server_AIS
                 people.Add(user);
             }
         }
-        public string DeleteRecord(List<User> people, int recordNumber) 
+
+        public void UpdateDataBase(string input)
         {
-            if (recordNumber <= 0 || recordNumber > people.Count) {logger.Error("Incorrect record number id");  throw new Exception($"There is no record with id {recordNumber}\n");  }
-            User human = people[recordNumber - 1];
             using (var db = new AISEntities())
             {
-                db.Users.Remove(db.Users.Find(human.id));
+                foreach (var item in db.Users)
+                {
+                    db.Users.Remove(item);
+                }
+                foreach (var user in input.Split('\n'))
+                {
+                    db.Users.Add(new User().ToStruct(user));
+                }
                 db.SaveChanges();
             }
-            people.Remove(human);
-            return $"record №{recordNumber} deleted successfully";
-
-        }
-        public string AddRecord(List<User> people, string input)
-        {
-            User human = new User().ToStruct(input);
-            using (var db = new AISEntities())
-            {
-                db.Users.Add(human);
-                db.SaveChanges();
-            }
-            people.Add(human);
-            return "New record added successfully";
-        }
-
-        public User GetSingleRecord(int recordNumber)
-        {
-            if (recordNumber <= 0 || recordNumber > people.Count) { logger.Error("Unexisted record id");throw new Exception($"There is no record with id {recordNumber}\n"); }
-            return people[recordNumber - 1];
-
         }
 
     }
