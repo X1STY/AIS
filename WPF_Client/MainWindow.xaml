@@ -11,7 +11,25 @@
     </Window.DataContext>
 
     <Grid >
-        <DataGrid ItemsSource="{Binding Persons}"  AutoGenerateColumns="True" Margin="0,0,0,74"/>
+        <!--<DataGrid ItemsSource="{Binding Persons}"  AutoGenerateColumns="True" Margin="0,0,0,74"/>-->
+
+        <DataGrid ItemsSource="{Binding Persons}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Last Name" Binding="{Binding last_name}" Width="Auto"/>
+                <DataGridTextColumn Header="First Name" Binding="{Binding first_name}" Width="Auto"/>
+                <DataGridTextColumn Header="Age" Binding="{Binding age}" Width="Auto"/>
+
+                <DataGridTemplateColumn Header="Life status" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate >
+                            <CheckBox IsChecked="{Binding is_alive, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+
         <Button Command="{Binding GetDataFromServer}"  Content="Получить данные" HorizontalAlignment="Left" Margin="104,350,0,0" VerticalAlignment="Top" Height="41" Width="214"/>
         <Button Command="{Binding UpdateDataInServer}"  Content="Сохранить данные" HorizontalAlignment="Left" Margin="350,350,0,0" VerticalAlignment="Top" Height="41" Width="214"/>
 

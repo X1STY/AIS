@@ -30,27 +30,27 @@ namespace WPF_Client
             RecieveMessage();
         }
 
-        public ObservableCollection<Person> GetDataFromServer()
+        public ObservableCollection<User> GetDataFromServer()
         {
-            var pers = new ObservableCollection<Person>();
+            var pers = new ObservableCollection<User>();
             SendMessage("get_data");
             string[] data = RecieveMessage().Split('\n');
             foreach (var item in data)
             {
-                Person person = new Person().ToStruct(item);
+                User person = new User().ToStruct(item);
                 pers.Add(person);
             }
             return pers;
         }
 
-        public void SaveData(ObservableCollection<Person> persons)
+        public void SaveData(ObservableCollection<User> persons)
         {
             string message = GetData(persons);
             SendMessage("save_data");
             SendMessage(message);
         }
 
-        public string GetData(ObservableCollection<Person> people)
+        public string GetData(ObservableCollection<User> people)
         {
             string output = "";
             int count = people.Count;

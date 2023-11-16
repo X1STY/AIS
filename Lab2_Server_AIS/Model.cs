@@ -27,7 +27,11 @@ namespace lab2_Server_AIS
             List<User> users = new List<User>();
             using (var db = new AISEntities())
             {
-                 users = db.Users.OrderBy(x => x.id).ToList();
+                try
+                {
+                    users = db.Users.OrderBy(x => x.id).ToList();
+
+                } catch (Exception ex) { logger.Error(ex); }
             }
             foreach (var user in users)
             {
@@ -41,11 +45,19 @@ namespace lab2_Server_AIS
             {
                 foreach (var item in db.Users)
                 {
-                    db.Users.Remove(item);
+                    try
+                    {
+                        db.Users.Remove(item);
+                    }
+                    catch (Exception ex) { logger.Error(ex); }
                 }
                 foreach (var user in input.Split('\n'))
                 {
-                    db.Users.Add(new User().ToStruct(user));
+                    try
+                    {
+                        db.Users.Add(new User().ToStruct(user));
+                    }
+                    catch (Exception ex) { logger.Error(ex); }
                 }
                 db.SaveChanges();
             }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using lab2_Server_AIS;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,8 +12,8 @@ namespace WPF_Client
 {
     public class ViewModel: INotifyPropertyChanged
     {
-        private ObservableCollection<Person> _persons;
-        public ObservableCollection<Person> Persons { get => _persons; set { _persons = value; OnPropertyChanged(nameof(Persons)); } }
+        private ObservableCollection<User> _persons;
+        public ObservableCollection<User> Persons { get => _persons; set { _persons = value; OnPropertyChanged(nameof(Persons)); } }
 
         private readonly Model model;
 
@@ -20,26 +21,26 @@ namespace WPF_Client
         {
 
             model = new Model();
-            Persons = new ObservableCollection<Person>();
+            Persons = new ObservableCollection<User>();
 
         }
 
         private Command updateDataInServer;
         public Command UpdateDataInServer
         {
-            get => updateDataInServer ?? (updateDataInServer = new Command(obj =>
+            get => new Command(obj =>
             {
                 model.SaveData(Persons);
-            }));
+            });
         }
 
         private Command getDataFromServer;
         public Command GetDataFromServer
         {
-            get => getDataFromServer ?? (getDataFromServer = new Command(obj =>
+            get => new Command(obj =>
             {
                 Persons = model.GetDataFromServer();
-            }));
+            });
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
