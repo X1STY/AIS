@@ -21,7 +21,8 @@ namespace Lab5
 
         public ViewModel()
         {
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appconfig.ini").ToString();
+            string rootDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
+            string filePath = Path.Combine(rootDirectory, "appconfig.ini");
             IniFile cfg = new IniFile(filePath);
 
             this.appId = cfg.Read("APPID", "AIS");
@@ -58,15 +59,14 @@ namespace Lab5
             if (res.TryGetProperty("access_token", out _))
             {
                 string access_token = res.GetProperty("access_token").ToString();
-                string user_id = res.GetProperty("user_id").ToString();
 
-                string methodUriT = $"https://api.vk.com/method/{{0}}?{{1}}&access_token={access_token}&v=5.154";
+                string getResponseURI = $"https://api.vk.com/method/{{0}}?{{1}}&access_token={access_token}&v=5.154";
 
-                res = await GET(string.Format(methodUriT, "account.getInfo", "&fields=country,lang,2fa_required,community_comments,no_wall_replies,vk_pay_app_id"));
+                res = await GET(string.Format(getResponseURI, "account.getInfo", "&fields=country,lang,2fa_required,community_comments,no_wall_replies,vk_pay_app_id"));
                 resString = JsonSerializer.Serialize(res, new JsonSerializerOptions { WriteIndented = true });
                 MessageBox.Show(resString);
 
-                res = await GET(string.Format(methodUriT, "docs.get", "&count=3"));
+                res = await GET(string.Format(getResponseURI, "docs.get", "&count=3"));
                 resString = JsonSerializer.Serialize(res, new JsonSerializerOptions { WriteIndented = true });
                 MessageBox.Show(resString);
             }
